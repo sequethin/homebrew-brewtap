@@ -44,8 +44,6 @@ class Lua < Formula
 
     system "make", "macosx", "INSTALL_TOP=#{prefix}", "INSTALL_MAN=#{man1}"
     system "make", "install", "INSTALL_TOP=#{prefix}", "INSTALL_MAN=#{man1}"
-
-    (lib+"pkgconfig").install 'etc/lua.pc'
   end
 end
 
