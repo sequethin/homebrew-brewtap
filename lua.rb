@@ -38,12 +38,6 @@ class Lua < Formula
     # Fix path in the config header
     inreplace 'src/luaconf.h', '/usr/local', HOMEBREW_PREFIX
 
-    # Fix paths in the .pc
-    inreplace 'etc/lua.pc' do |s|
-      s.gsub! "prefix= /usr/local", "prefix=#{HOMEBREW_PREFIX}"
-      s.gsub! "INSTALL_MAN= ${prefix}/man/man1", "INSTALL_MAN= ${prefix}/share/man/man1"
-    end
-
     # this ensures that this symlinking for lua starts at lib/lua/5.2 and not
     # below that, thus making luarocks work
     (HOMEBREW_PREFIX/"lib/lua"/version.to_s.split('.')[0..1].join('.')).mkpath
