@@ -3,6 +3,9 @@ require 'formula'
 # Warning: This is a customized formula! I'm experimenting with lua and homebrew.
 # By using this formula, you become part of my experiment ;)
 
+# NOTE: This formula is best used with --with-luajit.
+# Not sure why it's not working right with the lua-5.2.2 install.
+
 class Luarocks < Formula
   homepage 'http://luarocks.org'
   head 'https://github.com/keplerproject/luarocks.git'
