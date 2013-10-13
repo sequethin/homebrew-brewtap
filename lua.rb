@@ -1,34 +1,25 @@
 require 'formula'
 
 class Lua < Formula
-  # 5.2 is not fully backwards compatible, and breaks e.g. luarocks.
-  # It is available in Homebrew-versions for the time being.
   homepage 'http://www.lua.org/'
-  url 'http://www.lua.org/ftp/lua-5.1.5.tar.gz'
-  sha1 'b3882111ad02ecc6b972f8c1241647905cb2e3fc'
+  url 'http://www.lua.org/ftp/lua-5.2.2.tar.gz'
+  sha1 '0857e41e5579726a4cb96732e80d7aa47165eaf5'
 
   fails_with :llvm do
     build 2326
     cause "Lua itself compiles with LLVM, but may fail when other software tries to link."
   end
 
-  option :universal
   option 'with-completion', 'Enables advanced readline support'
-  option 'without-sigaction', 'Revert to ANSI signal instead of improved POSIX sigaction'
 
   # Be sure to build a dylib, or else runtime modules will pull in another static copy of liblua = crashy
   # See: https://github.com/mxcl/homebrew/pull/5043
   def patches
     p = [DATA]
-    # sigaction provided by posix signalling power patch from
-    # http://lua-users.org/wiki/LuaPowerPatches
-    unless build.without? 'sigaction'
-      p << 'http://lua-users.org/files/wiki_insecure/power_patches/5.1/sig_catch.patch'
-    end
     # completion provided by advanced readline power patch from
     # http://lua-users.org/wiki/LuaPowerPatches
     if build.with? 'completion'
-      p << 'http://luajit.org/patches/lua-5.1.4-advanced_readline.patch'
+      p << 'http://luajit.org/patches/lua-5.2.0-advanced_readline.patch'
     end
     p
   end
@@ -74,7 +65,7 @@ index 209a132..9387b09 100644
  TO_BIN= lua luac
  TO_INC= lua.h luaconf.h lualib.h lauxlib.h ../etc/lua.hpp
 -TO_LIB= liblua.a
-+TO_LIB= liblua.5.1.5.dylib
++TO_LIB= liblua.5.2.2.dylib
  TO_MAN= lua.1 luac.1
 
  # Lua version and release.
@@ -82,8 +73,8 @@ index 209a132..9387b09 100644
  	cd src && $(INSTALL_DATA) $(TO_INC) $(INSTALL_INC)
  	cd src && $(INSTALL_DATA) $(TO_LIB) $(INSTALL_LIB)
  	cd doc && $(INSTALL_DATA) $(TO_MAN) $(INSTALL_MAN)
-+	ln -s -f liblua.5.1.5.dylib $(INSTALL_LIB)/liblua.5.1.dylib
-+	ln -s -f liblua.5.1.dylib $(INSTALL_LIB)/liblua.dylib
++	ln -s -f liblua.5.2.2.dylib $(INSTALL_LIB)/liblua.5.2.dylib
++	ln -s -f liblua.5.2.dylib $(INSTALL_LIB)/liblua.dylib
 
  ranlib:
  	cd src && cd $(INSTALL_LIB) && $(RANLIB) $(TO_LIB)
@@ -93,10 +84,10 @@ index e0d4c9f..4477d7b 100644
 +++ b/src/Makefile
 @@ -22,7 +22,7 @@ MYLIBS=
 
- PLATS= aix ansi bsd freebsd generic linux macosx mingw posix solaris
+ PLATS= macosx
 
 -LUA_A=	liblua.a
-+LUA_A=	liblua.5.1.5.dylib
++LUA_A=	liblua.5.2.2.dylib
  CORE_O=	lapi.o lcode.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o lmem.o \
  	lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o ltm.o  \
  	lundump.o lvm.o lzio.o
@@ -106,14 +97,14 @@ index e0d4c9f..4477d7b 100644
  $(LUA_A): $(CORE_O) $(LIB_O)
 -	$(AR) $@ $(CORE_O) $(LIB_O)	# DLL needs all object files
 -	$(RANLIB) $@
-+	$(CC) -dynamiclib -install_name HOMEBREW_PREFIX/lib/liblua.5.1.dylib \
-+		-compatibility_version 5.1 -current_version 5.1.5 \
-+		-o liblua.5.1.5.dylib $^
++	$(CC) -dynamiclib -install_name HOMEBREW_PREFIX/lib/liblua.5.2.dylib \
++		-compatibility_version 5.2 -current_version 5.2.2 \
++		-o liblua.5.2.2.dylib $^
 
  $(LUA_T): $(LUA_O) $(LUA_A)
 -	$(CC) -o $@ $(MYLDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
 +	$(CC) -fno-common $(MYLDFLAGS) \
-+		-o $@ $(LUA_O) $(LUA_A) -L. -llua.5.1.5 $(LIBS)
++		-o $@ $(LUA_O) $(LUA_A) -L. -llua.5.2.2 $(LIBS)
 
  $(LUAC_T): $(LUAC_O) $(LUA_A)
  	$(CC) -o $@ $(MYLDFLAGS) $(LUAC_O) $(LUA_A) $(LIBS)
@@ -123,6 +114,4 @@ index e0d4c9f..4477d7b 100644
  macosx:
 -	$(MAKE) all MYCFLAGS=-DLUA_USE_LINUX MYLIBS="-lreadline"
 +	$(MAKE) all MYCFLAGS="MYCFLAGS_VAL" MYLIBS="-lreadline"
- # use this on Mac OS X 10.3-
- #	$(MAKE) all MYCFLAGS=-DLUA_USE_MACOSX
 
