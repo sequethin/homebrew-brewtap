@@ -1,5 +1,8 @@
 require 'formula'
 
+# Warning: This is a customized formula! I'm experimenting with lua and homebrew.
+# By using this formula, you become part of my experiment ;)
+
 class Lua < Formula
   homepage 'http://www.lua.org/'
   url 'http://www.lua.org/ftp/lua-5.2.2.tar.gz'
