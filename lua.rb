@@ -44,7 +44,7 @@ class Lua < Formula
       s.gsub! "INSTALL_MAN= ${prefix}/man/man1", "INSTALL_MAN= ${prefix}/share/man/man1"
     end
 
-    # this ensures that this symlinking for lua starts at lib/lua/5.1 and not
+    # this ensures that this symlinking for lua starts at lib/lua/5.2 and not
     # below that, thus making luarocks work
     (HOMEBREW_PREFIX/"lib/lua"/version.to_s.split('.')[0..1].join('.')).mkpath
 
@@ -57,61 +57,62 @@ end
 
 __END__
 diff --git a/Makefile b/Makefile
-index 209a132..9387b09 100644
+index bd9515f..8bfe1ae 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -43,7 +43,7 @@ PLATS= aix ansi bsd freebsd generic linux macosx mingw posix solaris
+@@ -41,7 +41,7 @@ PLATS= aix ansi bsd freebsd generic linux macosx mingw posix solaris
  # What to install.
  TO_BIN= lua luac
- TO_INC= lua.h luaconf.h lualib.h lauxlib.h ../etc/lua.hpp
+ TO_INC= lua.h luaconf.h lualib.h lauxlib.h lua.hpp
 -TO_LIB= liblua.a
 +TO_LIB= liblua.5.2.2.dylib
  TO_MAN= lua.1 luac.1
 
  # Lua version and release.
-@@ -64,6 +64,8 @@ install: dummy
+@@ -63,6 +63,8 @@ install: dummy
  	cd src && $(INSTALL_DATA) $(TO_INC) $(INSTALL_INC)
  	cd src && $(INSTALL_DATA) $(TO_LIB) $(INSTALL_LIB)
  	cd doc && $(INSTALL_DATA) $(TO_MAN) $(INSTALL_MAN)
 +	ln -s -f liblua.5.2.2.dylib $(INSTALL_LIB)/liblua.5.2.dylib
 +	ln -s -f liblua.5.2.dylib $(INSTALL_LIB)/liblua.dylib
 
- ranlib:
- 	cd src && cd $(INSTALL_LIB) && $(RANLIB) $(TO_LIB)
+ uninstall:
+ 	cd src && cd $(INSTALL_BIN) && $(RM) $(TO_BIN)
 diff --git a/src/Makefile b/src/Makefile
-index e0d4c9f..4477d7b 100644
+index fea895b..9b0de9c 100644
 --- a/src/Makefile
 +++ b/src/Makefile
-@@ -22,7 +22,7 @@ MYLIBS=
+@@ -28,7 +28,7 @@ MYOBJS=
 
- PLATS= macosx
+ PLATS= aix ansi bsd freebsd generic linux macosx mingw posix solaris
 
 -LUA_A=	liblua.a
 +LUA_A=	liblua.5.2.2.dylib
- CORE_O=	lapi.o lcode.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o lmem.o \
- 	lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o ltm.o  \
- 	lundump.o lvm.o lzio.o
-@@ -48,11 +48,13 @@ o:	$(ALL_O)
+ CORE_O=	lapi.o lcode.o lctype.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o \
+ 	lmem.o lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o \
+ 	ltm.o lundump.o lvm.o lzio.o
+@@ -56,11 +56,12 @@ o:	$(ALL_O)
  a:	$(ALL_A)
 
- $(LUA_A): $(CORE_O) $(LIB_O)
--	$(AR) $@ $(CORE_O) $(LIB_O)	# DLL needs all object files
+ $(LUA_A): $(BASE_O)
+-	$(AR) $@ $(BASE_O)
 -	$(RANLIB) $@
 +	$(CC) -dynamiclib -install_name HOMEBREW_PREFIX/lib/liblua.5.2.dylib \
 +		-compatibility_version 5.2 -current_version 5.2.2 \
 +		-o liblua.5.2.2.dylib $^
 
  $(LUA_T): $(LUA_O) $(LUA_A)
--	$(CC) -o $@ $(MYLDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
-+	$(CC) -fno-common $(MYLDFLAGS) \
-+		-o $@ $(LUA_O) $(LUA_A) -L. -llua.5.2.2 $(LIBS)
+-	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
++	$(CC) -fno-common $(MYLDFLAGS) -o $@ $(LUA_O) $(LUA_A) -L. -llua.5.2.2 $(LIBS)
 
  $(LUAC_T): $(LUAC_O) $(LUA_A)
- 	$(CC) -o $@ $(MYLDFLAGS) $(LUAC_O) $(LUA_A) $(LIBS)
-@@ -99,7 +101,7 @@ linux:
- 	$(MAKE) all MYCFLAGS=-DLUA_USE_LINUX MYLIBS="-Wl,-E -ldl -lreadline -lhistory -lncurses"
+ 	$(CC) -o $@ $(LDFLAGS) $(LUAC_O) $(LUA_A) $(LIBS)
+@@ -106,7 +107,7 @@ linux:
+ 	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_LINUX" SYSLIBS="-Wl,-E -ldl -lreadline"
 
  macosx:
--	$(MAKE) all MYCFLAGS=-DLUA_USE_LINUX MYLIBS="-lreadline"
-+	$(MAKE) all MYCFLAGS="MYCFLAGS_VAL" MYLIBS="-lreadline"
+-	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_MACOSX" SYSLIBS="-lreadline"
++	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_MACOSX -fno-common" SYSLIBS="-lreadline"
 
+ mingw:
+ 	$(MAKE) "LUA_A=lua52.dll" "LUA_T=lua.exe" \
