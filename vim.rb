@@ -27,7 +27,7 @@ class Vim < Formula
   end
 
   depends_on :python => :recommended
-  depends_on 'lua' => :optional
+  depends_on 'sequethin/brewtap/lua' => :recommended
 
   def install
     ENV['LUA_PREFIX'] = HOMEBREW_PREFIX if build.with?('lua')
