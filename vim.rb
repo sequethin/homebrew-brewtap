@@ -26,6 +26,12 @@ class Vim < Formula
     option "without-#{language}", "Build vim without #{language} support"
   end
 
+  # Patch to fix build on Mavericks
+  # See: https://github.com/mxcl/homebrew/pull/20473
+  def patches
+    DATA unless build.head?
+  end
+
   depends_on :python => :recommended
   depends_on 'sequethin/brewtap/lua' => :optional
 
@@ -81,3 +87,16 @@ class Vim < Formula
     ln_s bin+'vim', bin+'vi' if build.include? 'override-system-vi'
   end
 end
+
+__END__
+--- a/src/os_mac.h  2013-10-06 11:46:56.000000000 -0400
++++ b/src/os_mac.h  2013-10-26 14:27:56.000000000 -0400
+@@ -15,6 +15,8 @@
+ #if 0
+ # define OPAQUE_TOOLBOX_STRUCTS 0
+ #endif
++/* Include MAX_OS_X_VERSION_* macros */
++#include <AvailabilityMacros.h>
+
+ /*
+  * Macintosh machine-dependent things.
