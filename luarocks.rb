@@ -16,12 +16,8 @@ class Luarocks < Formula
   option 'with-luajit', 'Use LuaJIT from sequethin instead of the stock Lua, or stock luajit'
   option 'with-lua52', 'Use Lua 5.2 from versions instead of the stock Lua (or sequethin) '
 
-  if build.include? 'with-stock-luajit'
-    depends_on 'luajit'
-  elsif build.include? 'with-luajit'
+  if build.include? 'with-luajit'
     depends_on 'sequethin/brewtap/luajit'
-  elsif build.include? 'with-lua52'
-    depends_on 'lua52'
   else
     depends_on 'sequethin/brewtap/lua'
   end
