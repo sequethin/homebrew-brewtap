@@ -9,22 +9,15 @@ require 'formula'
 class Luarocks < Formula
   homepage 'http://luarocks.org'
   head 'https://github.com/keplerproject/luarocks.git'
-  url 'http://luarocks.org/releases/luarocks-2.1.0.tar.gz'
-  sha1 '2415bb20d6d5eff3c907512165d775b8e4088e46'
+  url 'http://luarocks.org/releases/luarocks-2.1.1.tar.gz'
+  sha1 '696e4ccb5caa3af478c0fbf562d16ad42bf404d5'
 
   option 'with-stock-luajit', 'Use LuaJIT from master instead of the stock Lua (or sequethin)'
   option 'with-luajit', 'Use LuaJIT from sequethin instead of the stock Lua, or stock luajit'
   option 'with-lua52', 'Use Lua 5.2 from versions instead of the stock Lua (or sequethin) '
-  option 'with-stock-lua', 'Use Lua 5.2 stock Lua instead of sequethin lua'
 
-  if build.include? 'with-stock-luajit'
-    depends_on 'luajit'
-  elsif build.include? 'with-luajit'
+  if build.include? 'with-luajit'
     depends_on 'sequethin/brewtap/luajit'
-  elsif build.include? 'with-lua52'
-    depends_on 'lua52'
-  elsif build.include? 'with-stock-lua'
-    depends_on 'lua'
   else
     depends_on 'sequethin/brewtap/lua'
   end
