@@ -37,7 +37,8 @@ class Luarocks < Formula
     # Install to the Cellar, but direct modules to HOMEBREW_PREFIX
     args = ["--prefix=#{prefix}",
             "--rocks-tree=#{HOMEBREW_PREFIX}",
-            "--sysconfdir=#{etc}/luarocks"]
+            "--sysconfdir=#{etc}/luarocks",
+            "--lua-suffix=52"]
 
     if build.include? 'with-luajit'
       args << "--with-lua-include=#{HOMEBREW_PREFIX}/include/luajit-2.0"
